@@ -16,6 +16,8 @@ dependencies = [
     "matplotlib",
     # Pin pyproj to a version that works better with Python 3.13
     "pyproj>=3.7.0",
+    # Pin numpy to version with Python 3.13 pre-built wheels
+    "numpy>=2.1.0",
 ]
 
 [tool.uv]
@@ -38,6 +40,7 @@ registry_modules = [
 ]
 
 [tool.ruff.lint]
+select = ["E", "F", "I"]  # Add this line!
 ignore = [
     "ERA001", # comments are fine for a learning environment
     "E501",   # Line too long for docstrings
