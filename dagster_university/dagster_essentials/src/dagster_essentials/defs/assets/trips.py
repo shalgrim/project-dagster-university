@@ -1,5 +1,9 @@
+import os
+
 import dagster as dg
+import duckdb
 import requests
+from dagster._utils.backoff import backoff
 
 from dagster_essentials.defs.assets import constants
 
@@ -20,6 +24,7 @@ def taxi_trips_file() -> None:
     ) as output_file:
         output_file.write(raw_trips.content)
 
+
 @dg.asset
 def taxi_zones_file() -> None:
     """
@@ -27,8 +32,33 @@ def taxi_zones_file() -> None:
     Sourced from the NYC Open Data portal.
     """
     # TODO: set up my file watchers on macbook air machine
-    raw_zones = requests.get("https://community-engineering-artifacts.s3.us-west-2.amazonaws.com/dagster-university/data/taxi_zones.csv")
+    raw_zones = requests.get(
+        "https://community-engineering-artifacts.s3.us-west-2.amazonaws.com/dagster-university/data/taxi_zones.csv"
+    )
 
     with open(constants.TAXI_ZONES_FILE_PATH, "wb") as output_file:
         output_file.write(raw_zones.content)
 
+
+@dg.asset(deps=["taxi_trips_file"])
+def taxi_trips() -> None:
+    """
+    The raw taxi trips dataset, loaded into a DuckDB database
+    """
+    query = """
+        create or replace table trips as (
+            select
+                VendorID as vendor_id,
+                PULocationID as pickup_zone_id,
+                DOLocationID as dropoff_zone_id,
+                RatecodeID as rate_code_id,
+                payment_type as payment_type,
+                tpep_dropoff_datetime as dropoff_datetime,
+                tpep_pickup_datetime as pickup_datetime,
+                trip_distance as trip_distance,
+                passenger_count as passenger_count,
+                total_amount as total_amount
+            from 'data/raw/taxi_trips_2023-03.parquet'
+        );
+    """
+    ...
