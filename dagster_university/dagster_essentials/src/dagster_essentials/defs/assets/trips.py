@@ -16,6 +16,6 @@ def taxi_trips_file() -> None:
     )
 
     with open(
-        constants.TAXI_TARIPS_TEMPLATE_FILE_PATH.format(month_to_fetch), "wb"
+        constants.TAXI_TRIPS_TEMPLATE_FILE_PATH.format(month_to_fetch), "wb"
     ) as output_file:
         output_file.write(raw_trips.content)
